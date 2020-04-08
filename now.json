@@ -1,0 +1,23 @@
+{
+  "version": 2,
+  "name": "gyldendal-content-export",
+  "scope": "gyldendal",
+  "builds": [
+    {
+      "src": "/src/index.js",
+      "use": "@now/node"
+    }
+  ],
+  "routes": [
+    {
+      "src": "(.*)",
+      "dest": "/src/index.js"
+    }
+  ],
+  "env": {
+    "DATA_SHEET": "@gyldendal-sheet-url",
+    "EZ_CONTENT_URL": "@gyldendal-ezcontent-url",
+    "EZ_CONTENT_SECRET": "@gyldendal-ezcontent-secret",
+    "EZ_CONTENT_DOMAIN": "@gyldendal-ezcontent-domain"
+  }
+}

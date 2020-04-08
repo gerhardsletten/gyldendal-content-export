@@ -1,0 +1,10 @@
+.eslintrc
+.git
+.gitignore
+README.md
+node_modules
+package-lock.json
+__tests__
+.env-default
+.env
+.prettierrc

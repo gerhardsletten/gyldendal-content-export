@@ -1,0 +1,83 @@
+const { json, send } = require('micro')
+const { router, get, post } = require('micro-fork')
+const query = require('micro-query')
+const { getData, getEZData, getMetaTags } = require('./data')
+const strings = require('./strings')
+
+async function getUrls(req, res) {
+  try {
+    const { org, debug } = query(req)
+    const { type } = req.params
+    if (!type) {
+      throw new Error(strings.typeMissing)
+    }
+    const data = await getData()
+    const urls = data
+      .filter(({ category }) => type === 'all' ? true : category === type)
+      .filter((item) => (org ? org === item.org : true))
+      .map((item) => (debug ? item : item.url))
+    send(res, 200, {
+      contentType: type,
+      urls,
+    })
+  } catch (error) {
+    send(res, 500, {
+      error: error.message,
+    })
+  }
+}
+
+async function getContent(req, res) {
+  try {
+    const {
+      urls,
+      importDetails,
+    } = await json(req)
+    if (!urls || urls.length < 1) {
+      throw new Error(strings.urlsMissing)
+    }
+    const data = await getData()
+    const pages = data
+      .filter(({ url }) => urls.some((val) => val === url))
+    let ezData
+    if (pages.length > 0) {
+      const ids = pages.map(({nodeId}) => nodeId)
+      ezData = await getEZData(ids)
+    }
+    
+    send(res, 200, {
+      importDetails,
+      pages: pages.map((page) => {
+        const ezPage = ezData.find(({nodeId}) => nodeId === page.nodeId)
+        return {
+          pageDetails: {
+            contentType: 'page',
+            id: page.objectId,
+            url: `${page.urlFull}`,
+            path: page.url,
+          },
+          metaTags: getMetaTags(ezPage),
+          content: ezPage && ezPage.fields ? ezPage.fields.map(({name, value}) => ({
+            alias: name,
+            value
+          })) : null,
+        }
+      }),
+    })
+  } catch (error) {
+    send(res, 500, {
+      error: error.message,
+    })
+  }
+}
+
+const notfound = (req, res) =>
+  send(res, 404, {
+    error: strings.notFound,
+  })
+
+module.exports = router()(
+  get('/api/export/urls/:type', getUrls),
+  post('/api/export/content', getContent),
+  get('/*', notfound)
+)

@@ -1,0 +1,17 @@
+{
+  "extends": [
+    "prettier",
+    "eslint:recommended"
+  ],
+  "rules": {
+    "space-before-function-paren": ["error", "never"],
+    "react/no-unused-prop-types": 0
+  },
+  "env": {
+    "node": true,
+    "es6": true
+  },
+  "parserOptions": {
+    "ecmaVersion": 2018
+  }
+}
