@@ -9,18 +9,19 @@ const EZ_CONTENT_SECRET = process.env.EZ_CONTENT_SECRET
 const DOMAIN = process.env.EZ_CONTENT_DOMAIN
 
 const validCategories = [
-  'news',
-  'article',
-  'articleListPage',
-  // 'navigation',
-  'textPage',
-  'authorsListPage',
-  'undervisningstips',
-  'courseListPage',
+  'news', // Ok
+  'article', // Ok
+  'articleListPage', // OK
+  'textPage', // Ok
+  'authorsListPage', // Ok
+  'undervisningstips', // OK
+  'courseListPage', // Ok
   'course',
   'event',
-  'faq',
-  //'global'
+  'faq', // Ok?? 
+  // Disabled
+  // 'global',
+  // 'navigation',
 ]
 
 const glOrg = [
@@ -133,9 +134,6 @@ function chuckedArray(arr, chunkSize) {
       return arr.slice(i*chunkSize,i*chunkSize+chunkSize);
   })
 }
-Object.defineProperty(Array.prototype, 'chunk', {
-  
-})
 
 async function getEZData(ids) {
   // Split ids in groups for faster fetch, because ez is slow..
@@ -154,7 +152,7 @@ async function getEZData(ids) {
       },
     })
     if (body.data) {
-      fetched = fetched.concat(body.data.map(normalizeEz))
+      fetched = fetched.concat(body.data.filter(Boolean).filter(({fields}) => !!fields).map(normalizeEz))
     }
   }
   return fetched

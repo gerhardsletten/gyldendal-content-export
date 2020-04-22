@@ -4,7 +4,8 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "dev": "micro-dev src/index.js",
+    "dev": "micro-dev -p 3001 src/index.js",
+    "dev-cache": "micro src/dev-cache.js",
     "format": "prettier --write \"src/**/*.js\"",
     "lint": "eslint -c .eslintrc src",
     "test": "ava"
@@ -14,6 +15,7 @@
   "dependencies": {
     "array-uniq": "^2.1.0",
     "camelcase": "^5.3.1",
+    "dateformat": "^3.0.3",
     "got": "^10.7.0",
     "micro": "^9.3.4",
     "micro-fork": "^3.0.0",

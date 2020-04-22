@@ -109,3 +109,91 @@ test('getContent can return a list of pages', async(t) => {
   t.is(typeof page.metaTags.title, 'string')
   app.close()
 })
+test('news return correct', async(t) => {
+  await testContentType(t, 'news')
+})
+test('article return correct', async(t) => {
+  await testContentType(t, 'article')
+})
+test('textPage return correct', async(t) => {
+  await testContentType(t, 'textPage')
+})
+test('faq return correct', async(t) => {
+  const type = 'faq'
+  const body = await getCase(t, type)
+  body.pages.forEach(({pageDetails, content}) => {
+    t.is(pageDetails.contentType, type)
+    const hasFaqField = content.find((item) => !!item['question'])
+    if (!hasFaqField) {
+      console.log(`Type ${type} error content`, pageDetails.url, pageDetails.ezContentType)
+    }
+    t.truthy(hasFaqField)
+  })
+})
+test('courseListPage should return zero content', async(t) => {
+  await testCategoryType(t, 'courseListPage')
+})
+test('undervisningstips should return zero content', async(t) => {
+  await testCategoryType(t, 'undervisningstips', 20)
+})
+test('authorsListPage should return zero content', async(t) => {
+  await testCategoryType(t, 'authorsListPage')
+})
+test('articleListPage should return zero content', async(t) => {
+  await testCategoryType(t, 'articleListPage')
+})
+
+async function getCase(t, type, limit = 300) {
+  t.timeout(30000)
+  const app = micro(service)
+  const url = await listen(app)
+  const { body: { urls } } = await got(`${url}/api/export/urls/${type}`, {
+    responseType: 'json',
+  })
+  const usedUrls = urls.filter((item, i) => i < limit)
+  console.log(`Type ${type}, found ${urls.length}, used ${usedUrls.length}`)
+  try {
+    const { body } = await got(`${url}/api/export/content`, {
+      responseType: 'json',
+      method: 'post',
+      json: {
+        urls: usedUrls
+      },
+    })
+    console.log(`Type ${type}, got from ez ${body.pages.length}`)
+    app.close()
+    return body
+  } catch (error) {
+    console.log(`Error ${type}`, error.response.body)
+    app.close()
+  }
+}
+
+async function testContentType(t, type, limit) {
+  const body = await getCase(t, type, limit)
+  body.pages.forEach(({pageDetails, content}) => {
+    t.is(pageDetails.contentType, type)
+    const fields = content.map((item) => item.alias)
+    const hasHeadline = fields.some(k => k === 'headline')
+    const hasDate = fields.some(k => k === 'publishedDate')
+    if (!hasHeadline) {
+      console.log(`Type ${type} error content`, pageDetails.url, pageDetails.ezContentType)
+    }
+    if (!hasDate) {
+      console.log(`Type ${type} error hasDate`, pageDetails.url, pageDetails.ezContentType)
+    }
+    t.truthy(hasHeadline)
+    t.truthy(hasDate)
+  })
+}
+
+async function testCategoryType(t, type, limit = 300) {
+  const body = await getCase(t, type, limit)
+  body.pages.forEach(({pageDetails, content}) => {
+    t.is(pageDetails.contentType, type)
+    if (content.length !== 0) {
+      console.log(`Type ${type} error content`, pageDetails.url, pageDetails.ezContentType)
+    }
+    t.is(content.length, 0)
+  })
+}

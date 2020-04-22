@@ -3,6 +3,10 @@ const { router, get, post } = require('micro-fork')
 const query = require('micro-query')
 const { getData, getEZData, getMetaTags } = require('./data')
 const strings = require('./strings')
+const {
+  normalize,
+  LISTING_PAGES
+} = require('./normalizeFields')
 
 async function getUrls(req, res) {
   try {
@@ -44,25 +48,46 @@ async function getContent(req, res) {
       const ids = pages.map(({nodeId}) => nodeId)
       ezData = await getEZData(ids)
     }
-    
     send(res, 200, {
       importDetails,
       pages: pages.map((page) => {
         const ezPage = ezData.find(({nodeId}) => nodeId === page.nodeId)
+        if (!ezPage || !ezPage.fields) {
+          return false
+        }
+        const fields = normalize({
+          fields: ezPage.fields,
+          category: page.category,
+          ezContentType: ezPage.contentClass,
+          ezObject: ezPage,
+          page
+        })
+        const withoutFields = LISTING_PAGES.some((val) => val === page.category)
+        if (!fields && !withoutFields) {
+          return false
+        }
         return {
           pageDetails: {
-            contentType: 'page',
+            contentType: page.category,
+            ezContentType: ezPage.contentClass,
             id: page.objectId,
             url: `${page.urlFull}`,
             path: page.url,
           },
           metaTags: getMetaTags(ezPage),
-          content: ezPage && ezPage.fields ? ezPage.fields.map(({name, value}) => ({
-            alias: name,
-            value
-          })) : null,
+          content: withoutFields ? [] : fields.map((item) => {
+            const {custom, ...rest} = item
+            if (custom) {
+              return rest
+            }
+            const {name, value} = item
+            return {
+              alias: name,
+              value
+            }
+          }),
         }
-      }),
+      }).filter(Boolean)
     })
   } catch (error) {
     send(res, 500, {
