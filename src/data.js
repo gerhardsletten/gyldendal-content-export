@@ -89,20 +89,20 @@ function normalizeEzMeta({contentClass, fields}) {
   if (['guux_article'].some((item) => item === contentClass)) {
     return {
       title: getField(fields, 'title'),
-      description: striptags(getField(fields, 'intro')),
+      description: strShorten(striptags(getField(fields, 'intro')), 160),
       thumbnail: getField(fields, 'image')
     }
   }
   if (['guux_tabs'].some((item) => item === contentClass)) {
     return {
       title: getField(fields, 'title'),
-      description: striptags(getField(fields, 'intro')),
+      description: strShorten(striptags(getField(fields, 'intro')), 160),
     }
   }
   if (['guux_task'].some((item) => item === contentClass)) {
     return {
       title: getField(fields, 'name'),
-      description: striptags(getField(fields, 'intro')),
+      description: strShorten(striptags(getField(fields, 'intro')), 160),
     }
   }
   if (['guux_course'].some((item) => item === contentClass)) {
@@ -111,7 +111,12 @@ function normalizeEzMeta({contentClass, fields}) {
       description: strShorten(striptags(getField(fields, 'body')), 160),
     }
   }
-  
+  if (['event'].some((item) => item === contentClass)) {
+    return {
+      title: getField(fields, 'title'),
+      description: strShorten(striptags(getField(fields, 'short_text')), 160),
+    }
+  }
   return {
 
   }

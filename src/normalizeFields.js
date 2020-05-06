@@ -13,7 +13,6 @@ const LISTING_PAGES = ['courseListPage', 'authorsListPage', 'articleListPage', '
 // ezContentClass
 function normalize({fields, category, ezContentType, ezObject, page}) {
   if (['news', 'article', 'textPage'].some(item => item === category) && ezContentType === 'article') {
-    // Todo: get date
     const withImage = fields.some(({name}) => name === 'image')
     return fields.reduce((list, item) => {
       if (item.name === 'title') {
@@ -84,7 +83,6 @@ function normalize({fields, category, ezContentType, ezObject, page}) {
     }, []).filter(Boolean)
   }
   if (['news', 'article'].some(item => item === category) && ezContentType === 'guux_article') {
-    // Todo: get date
     return fields.reduce((list, item) => {
       if (item.name === 'title') {
         const hasOwnDate = fields.find(({name}) => name === 'date')
@@ -153,7 +151,6 @@ function normalize({fields, category, ezContentType, ezObject, page}) {
     return false
   }
   if (['article'].some(item => item === category) && ezContentType === 'guux_tabs') {
-    // Todo: get date
     return fields.reduce((list, item) => {
       if (item.name === 'title') {
         if (ezObject.published) {
@@ -191,7 +188,6 @@ function normalize({fields, category, ezContentType, ezObject, page}) {
     return false
   }
   if (['textPage'].some(item => item === category) && ezContentType === 'guux_task') {
-    // Todo: get date
     return fields.reduce((list, item) => {
       if (item.name === 'name') {
         if (ezObject.published) {
@@ -236,7 +232,6 @@ function normalize({fields, category, ezContentType, ezObject, page}) {
     return false
   }
   if (['faq'].some(item => item === category) && ezContentType === 'guux_faq_article') {
-    // Todo: get date
     return fields.reduce((list, item) => {
       if (item.name === 'question') {
         const answer = fields.find(({name}) => name === 'answer')
@@ -255,7 +250,6 @@ function normalize({fields, category, ezContentType, ezObject, page}) {
     return false
   }
   if (['course'].some(item => item === category) && ezContentType === 'guux_course') {
-    // Todo: get date
     return fields.reduce((list, item) => {
       if (item.name === 'title') {
         list.push({
@@ -383,6 +377,52 @@ function normalize({fields, category, ezContentType, ezObject, page}) {
   if (['course'].some(item => item === category)) {
     // This is not valid as faq
     return false
+  }
+  if (['event'].some(item => item === category) && ezContentType === 'event') {
+    return fields.reduce((list, item) => {
+      if (item.name === 'title') {
+        return list.concat({
+          ...item,
+          name: 'title'
+        })
+      }
+      if (item.name === 'short_text') {
+        return list.concat({
+          ...item,
+          value: strip(item.value),
+          name: 'subtitle'
+        })
+      }
+      if (item.name === 'image') {
+        return list.concat({
+          ...item,
+          name: 'image'
+        })
+      }
+      if (item.name === 'from_time') {
+        return list.concat({
+          ...item,
+          value: tsToDate(item.value),
+          name: 'startDate'
+        })
+      }
+      if (item.name === 'place') {
+        return list.concat({
+          ...item,
+          name: 'location'
+        })
+      }
+      if (item.name === 'text') {
+        return list.concat({
+          ...item,
+          value: {
+            text: item.value
+          },
+          name: 'richTextEditor'
+        })
+      }
+      return list
+    }, []).filter(Boolean)
   }
   return fields
 }
