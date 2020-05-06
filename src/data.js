@@ -2,6 +2,7 @@ const neatCsv = require('neat-csv')
 const camelCase = require('camelcase')
 const got = require('got')
 const strip = require('striptags')
+const pMap = require('p-map')
 
 const DATA_SHEET = process.env.DATA_SHEET
 const EZ_CONTENT_URL = process.env.EZ_CONTENT_URL
@@ -97,6 +98,12 @@ function normalizeEzMeta({contentClass, fields}) {
       description: striptags(getField(fields, 'intro')),
     }
   }
+  if (['guux_task'].some((item) => item === contentClass)) {
+    return {
+      title: getField(fields, 'name'),
+      description: striptags(getField(fields, 'intro')),
+    }
+  }
   
   return {
 
@@ -137,9 +144,8 @@ function chuckedArray(arr, chunkSize) {
 
 async function getEZData(ids) {
   // Split ids in groups for faster fetch, because ez is slow..
-  const idGroups = chuckedArray(ids, 10)
-  let fetched = []
-  for await (const idGroup of idGroups) {
+  const idGroups = chuckedArray(ids, 5)
+  const mapper = async ids => {
     const { body } = await got(EZ_CONTENT_URL, {
       responseType: 'json',
       method: 'post',
@@ -148,14 +154,21 @@ async function getEZData(ids) {
         'User-Agent': 'curl'
       },
       json: {
-        ids: idGroup
+        ids
       },
     })
     if (body.data) {
-      fetched = fetched.concat(body.data.filter(Boolean).filter(({fields}) => !!fields).map(normalizeEz))
+      const filtered = body.data.filter(Boolean).filter(({fields}) => !!fields).map(normalizeEz)
+      if (filtered.length) {
+        return filtered
+      }
     }
+    return null
   }
-  return fetched
+  const data = await pMap(idGroups, mapper, {concurrency: 6})
+  const valid = data.filter(Boolean)
+  const combined = valid.flat(1)
+  return combined
 }
 
 function getMetaTags(page) {

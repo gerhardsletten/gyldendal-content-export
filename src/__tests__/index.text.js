@@ -87,8 +87,7 @@ test('getContent can return a list of pages', async(t) => {
     method: 'post',
     json: {
       urls: [
-        '/Barneboeker/Apper/Ballen',
-        '/Barneboeker/Apper/Barbie-Nils-og-pistolproblemet',
+        '/Barneboeker/Apper/Eg-og-Pontus-gaar-for-gull',
       ],
       importDetails: {
         tags,

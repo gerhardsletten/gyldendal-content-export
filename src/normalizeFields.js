@@ -1,7 +1,7 @@
 const strip = require('striptags')
 var dateFormat = require('dateformat')
 
-const tsToDate = (ts) => dateFormat(new Date(parseInt(ts) * 1000), "yyyy-dd-mm")
+const tsToDate = (ts) => dateFormat(new Date(parseInt(ts) * 1000), "yyyy-mm-dd'T'HH:MM:ss'Z'")
 
 const getParent = (str) => {
   const list = str.split('/')
