@@ -117,6 +117,29 @@ test('article return correct', async(t) => {
 test('textPage return correct', async(t) => {
   await testContentType(t, 'textPage')
 })
+test('course return correct', async(t) => {
+  const type = 'course'
+  const body = await getCase(t, type)
+  body.pages.forEach(({pageDetails, content, metaTags}) => {
+    t.is(pageDetails.contentType, type)
+    t.truthy(metaTags.title)
+
+    const fields = content.map((item) => item.alias)
+    
+    const title = fields.some(k => k === 'title')
+    t.truthy(title)
+    
+    const startDate = fields.some(k => k === 'startDate')
+    t.truthy(startDate)
+
+    // const schedule = fields.some(k => k === 'schedule')
+    // t.truthy(schedule)
+
+    if (!startDate || !title || !metaTags.title) {
+      console.log(`Type ${type} error content`, pageDetails.url, pageDetails.ezContentType)
+    }
+  })
+})
 test('faq return correct', async(t) => {
   const type = 'faq'
   const body = await getCase(t, type)

@@ -3,6 +3,7 @@ const camelCase = require('camelcase')
 const got = require('got')
 const strip = require('striptags')
 const pMap = require('p-map')
+const strShorten = require('str_shorten')
 
 const DATA_SHEET = process.env.DATA_SHEET
 const EZ_CONTENT_URL = process.env.EZ_CONTENT_URL
@@ -102,6 +103,12 @@ function normalizeEzMeta({contentClass, fields}) {
     return {
       title: getField(fields, 'name'),
       description: striptags(getField(fields, 'intro')),
+    }
+  }
+  if (['guux_course'].some((item) => item === contentClass)) {
+    return {
+      title: getField(fields, 'title'),
+      description: strShorten(striptags(getField(fields, 'body')), 160),
     }
   }
   

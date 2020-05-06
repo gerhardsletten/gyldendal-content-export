@@ -254,6 +254,136 @@ function normalize({fields, category, ezContentType, ezObject, page}) {
     // This is not valid as faq
     return false
   }
+  if (['course'].some(item => item === category) && ezContentType === 'guux_course') {
+    // Todo: get date
+    return fields.reduce((list, item) => {
+      if (item.name === 'title') {
+        list.push({
+          name: "subtitle",
+          value: ""
+        })
+        list.push({
+          name: "status",
+          value: ""
+        })
+        list.push({
+          name: "contact",
+          value: ""
+        })
+        return list.concat({
+          ...item,
+          name: 'title'
+        })
+      }
+      if (item.name === 'image') {
+        return list.concat({
+          ...item,
+          value: item.value,
+          name: 'image'
+        })
+      }
+      if (item.name === 'date') {
+        return list.concat({
+          ...item,
+          value: tsToDate(item.value),
+          name: 'startDate'
+        })
+      }
+      if (item.name === 'date_to') {
+        return list.concat({
+          ...item,
+          value: tsToDate(item.value),
+          name: 'endDate'
+        })
+      }
+      if (item.name === 'signup_date') {
+        return list.concat({
+          ...item,
+          value: tsToDate(item.value),
+          name: 'registrationDeadline'
+        })
+      }
+      if (item.name === 'price') {
+        return list.concat({
+          ...item,
+          value: item.value,
+          name: 'price'
+        })
+      }
+      if (item.name === 'address') {
+        const location = item.value
+        const parts = location.split(', ')
+        if (parts.length === 3) {
+          const last = parts[2].split(' ')
+          if (last.length > 1) {
+            const [zip, ...rest] = last
+            list.push({
+              name: "zipCode",
+              value: zip
+            })
+            list.push({
+              name: "city",
+              value: rest.join(' ')
+            })
+            return list.concat({
+              ...item,
+              value: `${parts[0]}, ${parts[1]}`,
+              name: 'location'
+            })
+          }
+        } else {
+          return list.concat({
+            ...item,
+            value: location,
+            name: 'location'
+          })
+        }
+      }
+      if (item.name === 'signup_link') {
+        return list.concat({
+          ...item,
+          value: item.value,
+          name: 'signupUrl'
+        })
+      }
+      if (item.name === 'body') {
+        const speakers = fields.find(({name}) => name === 'speakers')
+        return list.concat({
+          ...item,
+          value: {
+            text: `${item.value} ${speakers ? `<h2>Kursholdere</h2>${speakers.value}` : ''}`
+          },
+          name: 'richTextEditor'
+        })
+      }
+      if (item.name === 'program') {
+        const items = item.value.split('&')
+        return list.concat({
+          ...item,
+          value: {
+            headline: 'Program',
+            items: items.map(item => {
+              const [scheduleTime, scheduleTitle, scheduleDescription, speaker] = item.split('|')
+              return {
+                scheduleTime,
+                scheduleTitle,
+                speaker,
+                scheduleDescription
+              }
+            })
+          },
+          name: 'schedule'
+        })
+      }
+
+      
+      return list
+    }, []).filter(Boolean)
+  }
+  if (['course'].some(item => item === category)) {
+    // This is not valid as faq
+    return false
+  }
   return fields
 }
 

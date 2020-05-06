@@ -72,7 +72,7 @@ async function getContent(req, res) {
             ezContentType: ezPage.contentClass,
             id: page.objectId,
             url: `${page.urlFull}`,
-            path: page.url,
+            path: page.url
           },
           metaTags: getMetaTags(ezPage),
           content: withoutFields ? [] : fields.map((item) => {
@@ -86,6 +86,7 @@ async function getContent(req, res) {
               value
             }
           }),
+          // fields: ezPage.fields
         }
       }).filter(Boolean)
     })
