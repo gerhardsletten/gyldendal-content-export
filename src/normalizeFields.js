@@ -44,6 +44,7 @@ function normalize({fields, category, ezContentType, ezObject, page}) {
             value: {
                 layout: "image-left",
                 alignment: "image-top",
+                headline: title,
                 text: item.value,
                 manchet: intro ? strip(intro.value) : null,
                 image: {
