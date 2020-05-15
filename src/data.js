@@ -61,7 +61,7 @@ function fixDescription(str) {
   if (!str) {
     return ''
   }
-  return strShorten(strip(str.replace('&nbsp', ' ')), 157)
+  return strShorten(strip(str.replace(/&nbsp;/g, ' ').replace(/\s\s+/g, ' ')), 157)
 }
 
 
@@ -120,6 +120,26 @@ function normalizeEzMeta({contentClass, fields}) {
     return {
       title: getField(fields, 'title'),
       description: fixDescription(getField(fields, 'short_text')),
+    }
+  }
+  if (['guux_single_page'].some((item) => item === contentClass)) {
+    return {
+      title: getField(fields, 'title'),
+      description: fixDescription(getField(fields, 'text')),
+      thumbnail: getField(fields, 'image')
+    }
+  }
+  if (['guux_course_calendar'].some((item) => item === contentClass)) {
+    return {
+      title: getField(fields, 'title'),
+      description: '',
+      thumbnail: getField(fields, 'image')
+    }
+  }
+  if (['guux_skolestudio'].some((item) => item === contentClass)) {
+    return {
+      title: getField(fields, 'name'),
+      description: ''
     }
   }
   return {
