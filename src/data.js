@@ -18,8 +18,8 @@ const validCategories = [
   'authorsListPage', // Ok
   'undervisningstips', // OK
   'courseListPage', // Ok
-  'course',
-  'event',
+  'course', // Ok
+  'event', // Ok
   'faq', // Ok?? 
   // Disabled
   // 'global',
@@ -57,64 +57,69 @@ function getField(fields, name) {
   const found = fields && fields.find((item) => item.name === name)
   return found ? found.value : ''
 }
-function striptags(str) {
-  return strip(str)
+function fixDescription(str) {
+  if (!str) {
+    return ''
+  }
+  return strShorten(strip(str.replace('&nbsp', ' ')), 157)
 }
+
 
 function normalizeEzMeta({contentClass, fields}) {
   if (['article'].some((item) => item === contentClass)) {
     return {
       title: getField(fields, 'title'),
-      description: striptags(getField(fields, 'intro')),
+      description: fixDescription(getField(fields, 'intro')),
       thumbnail: getField(fields, 'image')
     }
   }
   if (['link'].some((item) => item === contentClass)) {
     return {
       title: getField(fields, 'name'),
-      description: striptags(getField(fields, 'description'))
+      description: fixDescription(getField(fields, 'description'))
     }
   }
   if (['folder'].some((item) => item === contentClass)) {
     return {
       title: getField(fields, 'name'),
-      description: striptags(getField(fields, 'description'))
+      description: fixDescription(getField(fields, 'description'))
     }
   }
   if (['html'].some((item) => item === contentClass)) {
     return {
-      title: getField(fields, 'title')
+      title: getField(fields, 'title'),
+      description: ''
     }
   }
   if (['guux_article'].some((item) => item === contentClass)) {
     return {
       title: getField(fields, 'title'),
-      description: strShorten(striptags(getField(fields, 'intro')), 160),
+      description: fixDescription(getField(fields, 'intro')),
       thumbnail: getField(fields, 'image')
     }
   }
   if (['guux_tabs'].some((item) => item === contentClass)) {
     return {
       title: getField(fields, 'title'),
-      description: strShorten(striptags(getField(fields, 'intro')), 160),
+      description: fixDescription(getField(fields, 'intro')),
     }
   }
   if (['guux_task'].some((item) => item === contentClass)) {
     return {
       title: getField(fields, 'name'),
-      description: strShorten(striptags(getField(fields, 'intro')), 160),
+      description: fixDescription(getField(fields, 'intro')),
     }
   }
   if (['guux_course'].some((item) => item === contentClass)) {
     return {
       title: getField(fields, 'title'),
-      description: strShorten(striptags(getField(fields, 'body')), 160),
+      description: fixDescription(getField(fields, 'body')),
     }
   }
   if (['event'].some((item) => item === contentClass)) {
     return {
       title: getField(fields, 'title'),
-      description: strShorten(striptags(getField(fields, 'short_text')), 160),
+      description: fixDescription(getField(fields, 'short_text')),
     }
   }
   return {
