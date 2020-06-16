@@ -234,7 +234,7 @@ async function getData() {
     mapHeaders: ({ header }) => camelCase(header),
   })
   const data = raw
-    .map(({ nodeId, objectId, category, newDestination, url, ...rest }) => {
+    .map(({ nodeId, objectId, category, newDestination, url, name, ...rest }) => {
       const tags = []
       Object.keys(rest)
         .filter((name) => name.indexOf('tag') !== -1)
@@ -253,6 +253,7 @@ async function getData() {
         urlFull: `${DOMAIN}/${url}`,
         org: getOrg(urls[0]),
         tags,
+        name,
       }
     })
     .filter(({ category }) => validCategories.some((cat) => cat === category))

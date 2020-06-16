@@ -48,8 +48,13 @@ async function getContent(req, res) {
       const ids = pages.map(({nodeId}) => nodeId)
       ezData = await getEZData(ids)
     }
+
+    const tags = pages.reduce((list, item) => list.concat(item.tags), [])
     send(res, 200, {
-      importDetails,
+      importDetails: {
+        tags: importDetails && importDetails.tags ? importDetails.tags : [...new Set(tags)],
+        destination: importDetails && importDetails.destination
+      },
       pages: pages.map((page) => {
         const ezPage = ezData.find(({nodeId}) => nodeId === page.nodeId)
         if (!ezPage || !ezPage.fields) {
@@ -72,7 +77,8 @@ async function getContent(req, res) {
             ezContentType: ezPage.contentClass,
             id: page.objectId,
             url: `${page.urlFull}`,
-            path: page.url
+            path: page.url,
+            name: page.name,
           },
           metaTags: getMetaTags(ezPage),
           content: withoutFields ? [] : fields.map((item) => {
